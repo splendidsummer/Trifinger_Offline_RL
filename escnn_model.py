@@ -164,9 +164,14 @@ class TrifingerInvCriticEncoder(torch.nn.Module):
         self.network = EMLP(**trifinger_critic_emlp_args)
         self.normal_block = torch.nn.Sequential()
         for i in range(non_constrain_hidden_layer):
-            self.normal_block.add_module(f'non-constrain-layer-{i}',
-                                        torch.nn.Linear(trifinger_n_hidden_neurons,
-                                                        non_constrain_hidden_neurons))
+            if i == 0:
+                self.normal_block.add_module(f'non-constrain-layer-{i}',
+                                             torch.nn.Linear(len(trifinger_inv_encoder_out_type.irreps),
+                                                            non_constrain_hidden_neurons))
+            else:
+                self.normal_block.add_module(f'non-constrain-layer-{i}',
+                                             torch.nn.Linear(non_constrain_hidden_neurons,
+                                                            non_constrain_hidden_neurons))
 
             self.normal_block.add_module(f'non-constrain-activation-{i}',
                                          torch.nn.ReLU(),
@@ -176,12 +181,23 @@ class TrifingerInvCriticEncoder(torch.nn.Module):
         self.head = torch.nn.Linear(non_constrain_hidden_neurons, 1)
 
     def forward(self, inputs):
-        inputs = group_utils.process_trifinger_obs(inputs)
+        """
+        Args:
+            inputs:  for critic the inputs are expected be the concatenation of 139 dimensional obs and 9 dimensional actions.
+        Remarks:
+            TODO: truncate the first 139 dimensional inputs, and the preprocess the truncated inputs according process_trifinger_obs func
+
+        Returns:
+
+        """
+        obs = group_utils.process_trifinger_obs(inputs[:, :139])
+        actions = inputs[:, 139:]
+        inputs = torch.cat([obs, actions], dim=-1)
         # step 1. compute the output of the equivariant encoder
         outs = self.network(inputs)
         # step 2: extract the invariant features from the above output
-        out_type = self.network[-1].out_type
-        inv_features = group_utils.compute_invariant_features(outs, out_type)
+        out_type = self.network.out_type
+        inv_features = group_utils.compute_invariant_features(outs.tensor, out_type)
         # step 3: feed the invariant features into normal nn and extract more expressive feature.
         outs = self.normal_block(inv_features)
         # step 4: Compute the Q value from the last hidden layer
@@ -245,5 +261,5 @@ if __name__ == '__main__':
     # trifinger_value_encoder_factory = TrifingerInvValueEncoderFactory()
 
     critic_encoder = TrifingerInvCriticEncoder(256)
-    batch_ob_actions = torch.randn((4, 158))
+    batch_ob_actions = torch.randn((4, 148))
     out = critic_encoder(batch_ob_actions)
