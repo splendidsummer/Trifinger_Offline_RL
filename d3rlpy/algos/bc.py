@@ -121,7 +121,6 @@ class BC(_BCBase):
         batch_size: int = 100,
         n_frames: int = 1,
         policy_type: str = "deterministic",
-        escnn: bool = False,
         use_gpu: UseGPUArg = False,
         scaler: ScalerArg = None,
         action_scaler: ActionScalerArg = None,
@@ -141,7 +140,6 @@ class BC(_BCBase):
             **kwargs,
         )
         self._policy_type = policy_type
-        self.escnn = escnn
 
     def _create_impl(
         self, observation_shape: Sequence[int], action_size: int
@@ -156,7 +154,6 @@ class BC(_BCBase):
             use_gpu=self._use_gpu,
             scaler=self._scaler,
             action_scaler=self._action_scaler,
-            escnn=self.escnn,
         )
         self._impl.build()
 

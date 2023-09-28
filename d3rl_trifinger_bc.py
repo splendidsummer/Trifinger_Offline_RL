@@ -6,7 +6,7 @@ Remarks:
 import d3rlpy.preprocessing
 import gym
 import wandb
-import datetime
+# import datetime
 import argparse
 import rrc_2022_datasets
 from d3rlpy.algos import BC
@@ -20,23 +20,23 @@ def main(args):
     WANDB_CONFIG = {
         "n_epochs": args.n_epochs,
         "dataset_type": args.dataset_type,
-        'learning_rate': args.critic_learning_rate,
-        'n_critic': args.n_critics,
+        'learning_rate': args.learning_rate,
+        'n_critics': args.n_critics,
         'train_ratio': args.train_ratio,
         'test_ratio': args.test_ratio,
         'escnn': args.escnn,
     }
 
-    now = datetime.datetime.now()
+    now = datetime.now()
     now = now.strftime('%Y%m%d%H%M%S')
 
     wandb.init(
         project='Trifinger_Offline_Equivariant_BC',
         config=WANDB_CONFIG,
         sync_tensorboard=True,
-        entity='unicore_upc_dl',
+        entity='unicorn_upc_dl',
         name=
-            'escnn_' + str(wandb.escnn) + '_' +
+            'escnn_' + str(WANDB_CONFIG['escnn']) + '_' +
             'train_' + str(WANDB_CONFIG['train_ratio']) + '_' +
             'test_' + str(WANDB_CONFIG['test_ratio']) + '_' +
             # 'augmentation_ ' + args.dataset_type + '_'
@@ -55,7 +55,13 @@ def main(args):
     )
 
     dataset = env.get_dataset()
-    dataset, valset = train_test_split(dataset,
+    dataset = d3rlpy.dataset.MDPDataset(
+        dataset['observations'],
+        dataset['actions'],
+        dataset['rewards'],
+        dataset['timeouts']
+    )
+    train_episodes, test_episodes = train_test_split(dataset.episodes,
                                        train_size=config.train_ratio,
                                        test_size=config.test_ratio)
 
@@ -85,21 +91,33 @@ def main(args):
 
     reward_scaler = d3rlpy.preprocessing.StandardRewardScaler()
 
-    model = BC(
-        use_gpu=False,
-        scaler='standard',
-        action_scaler='min_max',
-        reward_scaler=reward_scaler,  # Maybe there is a problem
-        learning_rate=config.learning_rate,
-        n_critics=config.n_critics,
-    )
+    if config.escnn:
+        model = BC(
+            use_gpu=False,
+            scaler='standard',
+            action_scaler='min_max',
+            reward_scaler=reward_scaler,  # Maybe there is a problem
+            learning_rate=config.learning_rate,
+            n_critics=config.n_critics,
+            encoder_factory = TrifingerEnvEncoderFactory(),
+        )
+
+    else:
+        model = BC(
+            use_gpu=False,
+            scaler='standard',
+            action_scaler='min_max',
+            reward_scaler=reward_scaler,  # Maybe there is a problem
+            learning_rate=config.learning_rate,
+            n_critics=config.n_critics,
+        )
 
     model.build_with_dataset(dataset)
     evaluate_scorer = evaluate_on_environment(env)
 
     results = model.fit(
-        dataset,
-        eval_episodes=valset,
+        train_episodes,
+        eval_episodes=test_episodes,
         n_epochs=config.n_epochs,
         scorers={
             'return': evaluate_scorer,
@@ -120,8 +138,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--n_epochs", type=int, default=10,
                         help="Number of episodes to run. Default: %(default)s", )
-    parser.add_argument("--probs",  type=float, default=1.0,
-                        help="Percentage of truncated data.",)
     parser.add_argument("--dataset_type",  type=str, choices=["raw", "aug"],
                         help="Whether using raw dataset or using augmented dataset",)
     parser.add_argument("--learning_rate",  type=float, default=0.0003,

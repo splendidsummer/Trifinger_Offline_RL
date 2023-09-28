@@ -131,7 +131,6 @@ class BCImpl(BCBaseImpl):
         use_gpu: Optional[Device],
         scaler: Optional[Scaler],
         action_scaler: Optional[ActionScaler],
-        escnn: bool = False,
     ):
         super().__init__(
             observation_shape=observation_shape,
@@ -144,7 +143,6 @@ class BCImpl(BCBaseImpl):
             action_scaler=action_scaler,
         )
         self._policy_type = policy_type
-        self.escnn = escnn
 
     def _build_network(self) -> None:
         if self._policy_type == "deterministic":

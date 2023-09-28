@@ -1,0 +1,79 @@
+{
+    "os": "Linux-5.15.0-84-generic-x86_64-with-glibc2.10",
+    "python": "3.8.0",
+    "heartbeatAt": "2023-09-28T10:04:45.496266",
+    "startedAt": "2023-09-28T10:04:44.288264",
+    "docker": null,
+    "cuda": null,
+    "args": [
+        "-e"
+    ],
+    "state": "running",
+    "program": "/home/summer/Projects/Trifinger_Offline_RL/d3rl_trifinger_bc.py",
+    "codePath": "d3rl_trifinger_bc.py",
+    "git": {
+        "remote": "https://github.com/splendidsummer/Trifinger_Offline_RL.git",
+        "commit": "3237699bca27491c18ccd886ae5b36dc01495421"
+    },
+    "email": "417846472@qq.com",
+    "root": "/home/summer/Projects/Trifinger_Offline_RL",
+    "host": "summer-Spin-SP513-55N",
+    "username": "summer",
+    "executable": "/home/summer/anaconda3/envs/torch/bin/python",
+    "cpu_count": 4,
+    "cpu_count_logical": 8,
+    "cpu_freq": {
+        "current": 2971.4719999999998,
+        "min": 400.0,
+        "max": 4700.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 3288.084,
+            "min": 400.0,
+            "max": 4700.0
+        },
+        {
+            "current": 2800.0,
+            "min": 400.0,
+            "max": 4700.0
+        },
+        {
+            "current": 2800.0,
+            "min": 400.0,
+            "max": 4700.0
+        },
+        {
+            "current": 2800.0,
+            "min": 400.0,
+            "max": 4700.0
+        },
+        {
+            "current": 3471.778,
+            "min": 400.0,
+            "max": 4700.0
+        },
+        {
+            "current": 2800.0,
+            "min": 400.0,
+            "max": 4700.0
+        },
+        {
+            "current": 3499.998,
+            "min": 400.0,
+            "max": 4700.0
+        },
+        {
+            "current": 2800.0,
+            "min": 400.0,
+            "max": 4700.0
+        }
+    ],
+    "disk": {
+        "total": 232.6243553161621,
+        "used": 191.84705352783203
+    },
+    "memory": {
+        "total": 15.411895751953125
+    }
+}
